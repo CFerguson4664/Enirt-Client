@@ -98,25 +98,28 @@ public class netComs : MonoBehaviour
 
             long serverTime = long.Parse(reply);
 
-            long sendTime = serverTime - firstTime;
-            long receiveTime = secondTime - serverTime;
-
             long elapsedTime = secondTime - firstTime;
+
+            //Latency in one direction
             long singleDirectionTime = elapsedTime / 2;
 
-            //If offset time is less that 0 the server is ahead
-            //If it is greater than 0 the server is behind
-            long offsetTime1 = singleDirectionTime - sendTime;
-            long offestTime2 = receiveTime - singleDirectionTime;
+            //Number of seconds the server is ahead
+            long aheadTime = (serverTime - firstTime) - singleDirectionTime;
+            
+            //Number of seconds the server is behind
+            long behindTime = (secondTime - serverTime) - singleDirectionTime;
 
-            Debug.Log("Offset time 1: " + offsetTime1);
-            Debug.Log("Offset time 2: " + offestTime2);
+            //Average the amount the server is ahead and behind (invert behind so that it is the number of ms the server is ahead)
+            //This offset can be added to the time on the client to convert it to the time on the server
+            double offsetTime = (aheadTime + (-1 * behindTime)) / 2d;
 
-            sumOfOffsets += offsetTime1;
-            sumOfOffsets += offestTime2;
+            Debug.Log("Latency (single Direction): " + singleDirectionTime);
+            Debug.Log("Offset time: " + offsetTime);
+
+            sumOfOffsets += offsetTime;
         }
 
-        long averageOffset = (long)(sumOfOffsets / (numPings * 2));
+        long averageOffset = (long)(sumOfOffsets / numPings);
 
         Debug.Log("The average Offset is: " + averageOffset + " ms");
 
